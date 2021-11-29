@@ -26,3 +26,6 @@ class {{resource.name | to_camel}}Repo:
 
     def delete(self, {{resource.identifier.name}}: {{resource.identifier.type}}) -> {{resource.name | to_camel}}:
         raise NotImplementedError()
+
+    def archive(self, {{resource.identifier.name}}: {{resource.identifier.type}}) -> {{resource.name | to_camel}}:
+        raise NotImplementedError()
