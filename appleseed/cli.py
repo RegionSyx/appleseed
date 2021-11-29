@@ -2,6 +2,7 @@ import yaml
 import json
 import os
 import sys
+from datetime import datetime
 
 import click
 from rich.console import Console
@@ -13,6 +14,12 @@ env = Environment(loader=PackageLoader("appleseed"),
                   autoescape=select_autoescape())
 
 repo = Repo(os.getcwd())
+
+
+def _write_header(f):
+    header = env.get_template('header.py').render(
+        now=datetime.now().isoformat())
+    f.write(header + '\n')
 
 
 @click.group()
@@ -42,7 +49,8 @@ def repos(spec, template_branch):
 
     resources = list(yaml.load_all(spec, Loader=yaml.FullLoader))
 
-    template = env.get_template("repo.py")
+    repo_template = env.get_template("repo.py")
+    models_template = env.get_template("models.py")
 
     prev_branch = repo.active_branch.name
     if template_branch not in repo.heads:
@@ -57,7 +65,12 @@ def repos(spec, template_branch):
 
     for resource in resources:
         with open('./repos/' + resource['plural'] + ".py", 'w') as output:
-            output.write(template.render(resource=resource))
+            _write_header(output)
+            output.write(repo_template.render(resource=resource))
+
+    with open('./models.py', 'w') as output:
+        _write_header(output)
+        output.write(models_template.render(resources=resources))
 
     data = {'resources': resources, 'command': ' '.join(sys.argv)}
     with open('.repos.spec.json', 'w') as f:
