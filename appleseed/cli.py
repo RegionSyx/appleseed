@@ -17,7 +17,7 @@ repo = Repo(os.getcwd())
 
 
 def _write_header(f):
-    header = env.get_template('header.py').render(
+    header = env.get_template('header.py.jinja').render(
         now=datetime.now().isoformat())
     f.write(header + '\n')
 
@@ -27,30 +27,39 @@ def cli():
     pass
 
 
-@cli.group()
-def apply():
-    pass
-
-
-@apply.command()
-@click.argument('output', type=click.File('w'))
-def hello_world(output):
-    console = Console()
-
-    template = env.get_template("HelloWorld.py")
-    output.write(template.render(message="Goodbye, World!!!!!"))
-
-
-@apply.command()
-@click.argument('spec', type=click.File('r'))
+@cli.command()
+@click.option('--resources-path')
+@click.option('--package-name')
 @click.option('--template-branch', default='appleseed')
-def repos(spec, template_branch):
+@click.option('--appleseed-spec', default='.appleseed.json')
+def apply(template_branch, appleseed_spec, resources_path, package_name):
     console = Console()
 
-    resources = list(yaml.load_all(spec, Loader=yaml.FullLoader))
+    if os.path.exists(appleseed_spec):
+        with open(appleseed_spec, 'r') as f:
+            params = json.loads(f.read())
+    else:
+        params = {}
 
-    repo_template = env.get_template("repo.py")
-    models_template = env.get_template("models.py")
+    if resources_path:
+        pass
+    elif params.get('resources_path'):
+        resources_path = params['resources_path']
+    else:
+        raise ArgumentError("--resources-path must be given")
+
+    if package_name:
+        pass
+    elif params.get('package_name'):
+        package_name = params['package_name']
+    else:
+        raise ArgumentError("--package-name must be given")
+
+    with open(resources_path, 'r') as f:
+        resources = list(yaml.load_all(f, Loader=yaml.FullLoader))
+
+    repo_template = env.get_template("repo.py.jinja")
+    models_template = env.get_template("models.py.jinja")
 
     prev_branch = repo.active_branch.name
     if template_branch not in repo.heads:
@@ -59,21 +68,35 @@ def repos(spec, template_branch):
         repo.git.checkout(template_branch)
 
     try:
-        os.mkdir('repos')
+        os.mkdir(package_name)
+    except OSError as error:
+        pass
+
+    try:
+        os.mkdir(package_name + '/repos')
     except OSError as error:
         pass
 
     for resource in resources:
-        with open('./repos/' + resource['plural'] + ".py", 'w') as output:
+        with open(package_name + '/repos/' + resource['plural'] + ".py",
+                  'w') as output:
             _write_header(output)
             output.write(repo_template.render(resource=resource))
 
-    with open('./models.py', 'w') as output:
+    with open(package_name + '/models.py', 'w') as output:
         _write_header(output)
         output.write(models_template.render(resources=resources))
 
-    data = {'resources': resources, 'command': ' '.join(sys.argv)}
-    with open('.repos.spec.json', 'w') as f:
+    with open('./requirements.txt', 'w') as output:
+        for r in ['sqlalchemy']:
+            output.write(r + '\n')
+
+    data = {
+        'resources_path': resources_path,
+        'package_name': package_name,
+        'command': ' '.join(sys.argv)
+    }
+    with open('.appleseed.json', 'w') as f:
         f.write(json.dumps(data, indent=2, sort_keys=True))
 
     if len(repo.index.diff(None)) > 0:
