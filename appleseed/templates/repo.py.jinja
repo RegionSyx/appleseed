@@ -15,7 +15,7 @@ class {{resource.name | to_camel}}Repo:
     def __init__(self, conn):
         self.conn = conn
 
-    def get(self, id: int) -> {{resource.name | to_camel}}:
+    def get(self, {{resource.identifier.name}}: {{resource.identifier.type}}) -> {{resource.name | to_camel}}:
         raise NotImplementedError()
 
     def upsert(self, *{{resource.plural}}: list[{{resource.plural | to_camel}}]) -> list[{{resource.plural | to_camel}}]:
@@ -24,5 +24,5 @@ class {{resource.name | to_camel}}Repo:
     def find(self) -> list[{{resource.plural | to_camel}}]:
         raise NotImplementedError()
 
-    def delete(self, id: int) -> {{resource.name | to_camel}}:
+    def delete(self, {{resource.identifier.name}}: {{resource.identifier.type}}) -> {{resource.name | to_camel}}:
         raise NotImplementedError()

@@ -94,7 +94,6 @@ def apply(template_branch, appleseed_spec, resources_path, package_name):
     data = {
         'resources_path': resources_path,
         'package_name': package_name,
-        'command': ' '.join(sys.argv)
     }
     with open('.appleseed.json', 'w') as f:
         f.write(json.dumps(data, indent=2, sort_keys=True))
