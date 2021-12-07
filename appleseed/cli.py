@@ -52,13 +52,10 @@ def list_templates():
 
 @cli.command()
 @click.argument('name')
-@click.option('--resources-path')
-@click.option('--package-name')
 @click.option('--template-branch', default='appleseed')
 @click.option('--appleseed-spec', default='.appleseed.json')
 @click.option('--verbose', '-v', is_flag=True)
-def apply(name, template_branch, appleseed_spec, resources_path, package_name,
-          verbose):
+def apply(name, template_branch, appleseed_spec, verbose):
     console = Console()
 
     base_template_path = os.path.join(os.path.dirname(__file__), 'templates')
