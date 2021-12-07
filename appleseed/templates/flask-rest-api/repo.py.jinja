@@ -1,0 +1,60 @@
+from dataclasses import dataclass
+from datetime import datetime
+
+import sqlalchemy as sa
+
+from {{package_name}} import models as m
+
+class {{resource.name | to_camel}}NotFoundError(BaseException):
+    pass
+
+
+@dataclass
+class {{resource.name | to_camel}}:
+    {%- for attr in resource.attributes %}
+    {{attr.name}}: Optional[{{attr.type}}]
+    {%- endfor %}
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+
+
+class {{resource.name | to_camel}}Repo:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def get(self, {{resource.identifier.name}}: {{resource.identifier.type}}) -> {{resource.name | to_camel}}:
+        stmt = sa.select([m.{{resource.plural}}]).where({{resource.identifier.name}}={{resource.identifier.name}})
+
+        result = self.conn.execute(stmt).fetchone()
+        if not result:
+            raise {{resource.name | to_camel}}NotFoundError()
+
+        return {{resource.name | to_camel}}(**{k: v for k, v in result.items()})
+
+    def create(self, *{{resource.plural}}: list[{{resource.plural | to_camel}}]) -> list[{{resource.plural | to_camel}}]:
+        stmt = sa.insert([m.{{resource.plural}}]).where({{resource.identifier.name}}={{resource.identifier.name}}).values([x.asdict() for x in {{resource.plural}}]) \
+                .returning(m.{{resource.plural}})
+
+        results = self.conn.execute(stmt).fetchall()
+
+        return [{{resource.name | to_camel}}(**{k: v for k, v in result.items()}) for result in results]
+
+    def upsert(self, *{{resource.plural}}: list[{{resource.plural | to_camel}}]) -> list[{{resource.plural | to_camel}}]:
+        stmt = sa.insert([m.{{resource.plural}}]).where({{resource.identifier.name}}={{resource.identifier.name}}).values([x.asdict() for x in {{resource.plural}}]) \
+                .returning(m.{{resource.plural}})
+
+        results = self.conn.execute(stmt).fetchall()
+
+        return [{{resource.name | to_camel}}(**{k: v for k, v in result.items()}) for result in results]
+
+    def find(self) -> list[{{resource.plural | to_camel}}]:
+        stmt = sa.select([m.{{resource.plural}}]).where({{resource.identifier.name}}={{resource.identifier.name}})
+
+        results = self.conn.execute(stmt).fetchall()
+
+        return [{{resource.name | to_camel}}(**{k: v for k, v in result.items()}) for result in results]
+
+    def delete(self, {{resource.identifier.name}}: {{resource.identifier.type}}) -> None:
+        stmt = sa.delete([m.{{resource.plural}}]).where({{resource.identifier.name}}={{resource.identifier.name}})
+
+        self.conn.execute(stmt)

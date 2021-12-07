@@ -1,0 +1,10 @@
+name: flask-rest-api
+version: 0.0.1
+author: Eric Hurst
+description: Sample Rest API
+parameters:
+  - name: package_name
+    type: str
+  - name: resources_spec
+    type: file
+    format: yaml
