@@ -56,7 +56,9 @@ def list_templates():
 @click.option('--package-name')
 @click.option('--template-branch', default='appleseed')
 @click.option('--appleseed-spec', default='.appleseed.json')
-def apply(name, template_branch, appleseed_spec, resources_path, package_name):
+@click.option('--verbose', '-v', is_flag=True)
+def apply(name, template_branch, appleseed_spec, resources_path, package_name,
+          verbose):
     console = Console()
 
     base_template_path = os.path.join(os.path.dirname(__file__), 'templates')
@@ -96,6 +98,10 @@ def apply(name, template_branch, appleseed_spec, resources_path, package_name):
 
     context = AppleseedContext(console=console, parameters=params)
     module.apply(context)
+
+    if verbose:
+        for file in context.files_written:
+            console.print(f"Updated file '{file}'")
 
     with open('.appleseed.json', 'w') as f:
         f.write(json.dumps(params, indent=2, sort_keys=True))
