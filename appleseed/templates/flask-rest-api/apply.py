@@ -10,18 +10,9 @@ env = Environment(loader=FileSystemLoader(os.path.dirname(__file__)),
 def apply(context: AppleseedContext):
     resources = context.parameters['resources_spec']
     package_name = context.parameters['package_name']
+
     repo_template = env.get_template("repo.py.jinja")
     models_template = env.get_template("models.py.jinja")
-
-    try:
-        os.mkdir(package_name)
-    except OSError as error:
-        pass
-
-    try:
-        os.mkdir(package_name + '/repos')
-    except OSError as error:
-        pass
 
     for resource in resources:
         context.write_file(
