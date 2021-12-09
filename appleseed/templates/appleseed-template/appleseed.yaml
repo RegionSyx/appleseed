@@ -1,0 +1,8 @@
+name: appleseed-template
+version: 0.0.1
+author: Eric Hurst
+parameters:
+  - name: template_name
+    type: str
+  - name: author
+    type: str

@@ -1,0 +1,10 @@
+from appleseed.cli import AppleseedContext
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+env = Environment(loader=FileSystemLoader(os.path.dirname(__file__)),
+                  extensions=['jinja2_strcase.StrcaseExtension'],
+                  autoescape=select_autoescape())
+
+
+def apply(context: AppleseedContext):
+    raise NotImplementedError()

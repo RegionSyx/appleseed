@@ -16,7 +16,6 @@ from appleseed.context import AppleseedContext
 repo = Repo(os.getcwd())
 
 
-
 @click.group()
 def cli():
     pass
@@ -73,6 +72,7 @@ def apply(name, template_branch, appleseed_spec, verbose):
                     yaml.load_all(f, Loader=yaml.FullLoader))
 
     prev_branch = repo.active_branch.name
+
     if template_branch not in repo.heads:
         repo.git.checkout('--orphan', template_branch)
     else:
